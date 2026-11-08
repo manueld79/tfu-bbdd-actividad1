@@ -8,7 +8,8 @@ services:
       POSTGRES_USER: laboratorio
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:?falta POSTRES_PASSWORD en .env}"
     volumes:
-      - pgdata:/var/lib/postgres/data
+      - pgdata:/var/lib/postgresql/data
+      - ./sql:/sql:ro
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "laboratorio", "-d", "carburantes"]
       interval: 2s
