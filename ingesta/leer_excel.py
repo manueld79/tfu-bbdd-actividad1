@@ -3,6 +3,7 @@ from decimal import Decimal
 from datetime import datetime
 from unidades import obtener_unidad
 import psycopg
+import argparse
 
 def contar_filas(archivo):
     with xlrd.open_workbook(archivo) as libro:
@@ -102,37 +103,25 @@ def leer_estaciones(archivo, tipo_estacion, filas=None):
 
     return estaciones
 
-terrestres = contar_filas("/datos/preciosEESS_es.xls")
-maritimas = contar_filas("/datos/embarcacionesPrecios_es.xls")
+parser = argparse.ArgumentParser(description="Carga los Excel de carburantes")
+parser.add_argument(
+    "--muestra",
+    action="store_true",
+    help="Carga solo las filas de Santa Ana y Altea",
+)
+args = parser.parse_args()
 
-print(f"Filas terrestres: {terrestres}")
-print(f"Filas marítimas: {maritimas}")
+terrestres = leer_estaciones(
+    "/datos/preciosEESS_es.xls", "terrestre", (31,) if args.muestra else None
+)
+maritimas = leer_estaciones(
+    "/datos/embarcacionesPrecios_es.xls", "maritima", (6,) if args.muestra else None
+)
+estaciones = terrestres + maritimas
 
-ruta_terrestre = "/datos/preciosEESS_es.xls"
-ruta_maritima = "/datos/embarcacionesPrecios_es.xls"
-
-todas_terrestres = leer_estaciones(ruta_terrestre, "terrestre")
-todas_maritimas = leer_estaciones(ruta_maritima, "maritima")
-
-print(f"Estaciones terrestres leídas: {len(todas_terrestres)}")
-print(f"Estaciones marítimas leídas: {len(todas_maritimas)}")
-
-precios_terrestres = sum(len(estacion["precios"]) for estacion in todas_terrestres)
-precios_maritimos = sum(len(estacion["precios"]) for estacion in todas_maritimas)
-
-print(f"Precios terrestres leídos: {precios_terrestres}")
-print(f"Precios marítimos leídos: {precios_maritimos}")
-
-terrestres_prueba = leer_estaciones(ruta_terrestre, "terrestre", (31,))
-maritimas_prueba = leer_estaciones(ruta_maritima, "maritima", (6, 91))
-
-santa_ana = terrestres_prueba[0]
-altea, poste_girona = maritimas_prueba
-
-print("\nValores recibidos de las funciones:")
-print(f"Provincia de Santa Ana: {santa_ana['Provincia']}")
-print(f"Rótulo de Altea: {altea['Rótulo']}")
-
+print(f"Estaciones terrestres leídas: {len(terrestres)}")
+print(f"Estaciones marítimas leídas: {len(maritimas)}")
+print(f"Precios leídos: {sum(len(e['precios']) for e in estaciones)}")
 detalle_insercion = False
 detalle_comprobacion = False
 
@@ -144,10 +133,10 @@ with psycopg.connect() as conexion:
 
         if ya_hay_estaciones:
             raise SystemExit("La base ya contiene estaciones. Usa una base vacía para importar.")
-        
-        for numero, estacion in enumerate(todas_terrestres + todas_maritimas, start=1):
+
+        for numero, estacion in enumerate(estaciones, start=1):
             if numero == 1 or numero % 1000 == 0:
-                print(f"Procesando estación {numero} de 12209...")
+                print(f"Procesando estación {numero} de {len(estaciones)}...")
                 
             cursor.execute(
                 """
