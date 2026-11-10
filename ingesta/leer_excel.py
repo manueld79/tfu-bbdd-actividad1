@@ -138,6 +138,13 @@ detalle_comprobacion = False
 
 with psycopg.connect() as conexion:
     with conexion.cursor() as cursor:
+        cursor.execute("LOCK TABLE estacion IN SHARE ROW EXCLUSIVE MODE")
+        cursor.execute("SELECT EXISTS (SELECT 1 FROM estacion)")
+        ya_hay_estaciones = cursor.fetchone()[0]
+
+        if ya_hay_estaciones:
+            raise SystemExit("La base ya contiene estaciones. Usa una base vacía para importar.")
+        
         for numero, estacion in enumerate(todas_terrestres + todas_maritimas, start=1):
             if numero == 1 or numero % 1000 == 0:
                 print(f"Procesando estación {numero} de 12209...")
