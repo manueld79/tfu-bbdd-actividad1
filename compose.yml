@@ -15,5 +15,19 @@ services:
       interval: 2s
       timeout: 3s
       retries: 20
+  
+  ingesta:
+    image: tfu-bbdd-ingesta:dev
+    build: ./ingesta
+    environment:
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: carburantes
+      PGUSER: laboratorio
+      PGPASSWORD: "${POSTGRES_PASSWORD:?falta POSTRES_PASSWORD en .env}"
+    depends_on:
+      db:
+        condition: service_healthy
+
 volumes:
   pgdata:
