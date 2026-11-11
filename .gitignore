@@ -1,1 +1,10 @@
 .env
+.env.*
+!.env.example
+.DS_Store
+__pycache__/
+*.py[cod]
+.venv/
+logs/
+~$*
+gii35_act1.docx

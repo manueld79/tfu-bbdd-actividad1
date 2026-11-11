@@ -1,0 +1,60 @@
+erDiagram
+    direction LR
+    %% Modelo relacional de sql/01_esquema.sql.
+    %% Los comentarios UQ_M y UQ_P indican grupos UNIQUE compuestos,
+    %% no restricciones UNIQUE independientes para cada columna.
+    %% UQ_M = UNIQUE (id_provincia, nombre).
+    %% UQ_P = UNIQUE (id_estacion, id_tipo_carburante, fecha_dato).
+    PROVINCIA ||..o{ MUNICIPIO : contiene
+    MUNICIPIO ||..o{ ESTACION : ubica
+    EMPRESA |o..o{ ESTACION : identifica_por_rotulo
+    ESTACION ||..o{ PRECIO : publica
+    TIPO_CARBURANTE ||..o{ PRECIO : clasifica
+
+    PROVINCIA {
+        integer id_provincia PK "IDENTITY ALWAYS; NOT NULL"
+        text nombre UK "NOT NULL"
+    }
+
+    MUNICIPIO {
+        integer id_municipio PK "IDENTITY ALWAYS; NOT NULL"
+        integer id_provincia FK "NOT NULL; UQ_M (1 de 2)"
+        text nombre "NOT NULL; UQ_M (2 de 2)"
+    }
+
+    EMPRESA {
+        integer id_empresa PK "IDENTITY ALWAYS; NOT NULL"
+        text rotulo UK "NOT NULL; rotulo publicado en Excel"
+    }
+
+    ESTACION {
+        integer id_estacion PK "IDENTITY ALWAYS; NOT NULL"
+        integer id_municipio FK "NOT NULL"
+        integer id_empresa FK "NULL permitido"
+        text tipo_estacion "NOT NULL; terrestre o maritima"
+        text localidad "NOT NULL"
+        text codigo_postal "NOT NULL; cinco digitos"
+        text direccion "NOT NULL"
+        text margen "NULL permitido; D, I o N"
+        numeric latitud "numeric(9,6); NULL; entre -90 y 90"
+        numeric longitud "numeric(9,6); NULL; entre -180 y 180"
+        text horario "NOT NULL"
+        text tipo_venta "NOT NULL"
+        text remision "NOT NULL"
+        text tipo_servicio "NULL permitido"
+        timestamp fecha_ultima_actualizacion "NOT NULL; sin zona horaria"
+    }
+
+    TIPO_CARBURANTE {
+        integer id_tipo_carburante PK "IDENTITY ALWAYS; NOT NULL"
+        text nombre UK "NOT NULL"
+    }
+
+    PRECIO {
+        integer id_precio PK "IDENTITY ALWAYS; NOT NULL"
+        integer id_estacion FK "NOT NULL; UQ_P (1 de 3)"
+        integer id_tipo_carburante FK "NOT NULL; UQ_P (2 de 3)"
+        numeric importe "numeric(12,6); NOT NULL; mayor o igual a 0"
+        text unidad "NOT NULL; unidad del precio publicado"
+        timestamp fecha_dato "NOT NULL; sin zona horaria; UQ_P (3 de 3)"
+    }
