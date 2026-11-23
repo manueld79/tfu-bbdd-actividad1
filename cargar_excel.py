@@ -167,7 +167,9 @@ def cargar_estaciones(cursor, estaciones):
         raise ValueError("La base ya contiene estaciones. Usa una base vacía para importar.")
     provincias, municipios, empresas, carburantes = cargar_catalogos(cursor, estaciones)
 
-    for estacion in estaciones:
+    for numero_estacion, estacion in enumerate(estaciones, start=1):
+        if numero_estacion == 1 or numero_estacion % 1000 == 0 or numero_estacion == len(estaciones):
+            print(f"Procesando estación {numero_estacion} de {len(estaciones)}...", flush=True)
         datos = estacion.datos | {
             "id_municipio": municipios[provincias[estacion.provincia], estacion.municipio],
             "id_empresa": empresas.get(estacion.rotulo),
@@ -213,6 +215,12 @@ def main():
             for nombre, tipo, fila in ARCHIVOS
         ]
         estaciones = [estacion for carga in cargas for estacion in carga]
+        esperados = {
+            tipo: (len(carga), sum(len(e.precios) for e in carga))
+            for (_, tipo, _), carga in zip(ARCHIVOS, cargas)
+        }
+        for tipo, (cantidad, precios) in esperados.items():
+            print(f"Excel {tipo}: {cantidad} estaciones y {precios} precios leídos", flush=True)
         conexion = {"dbname": args.base_datos, "connect_timeout": 5}
         if args.pedir_clave:
             conexion["password"] = getpass("Contraseña de PostgreSQL: ")
@@ -223,6 +231,18 @@ def main():
             total = cursor.execute(
                 "SELECT (SELECT count(*) FROM estacion), (SELECT count(*) FROM precio)"
             ).fetchone()
+            obtenidos = {
+                tipo: (cantidad, precios)
+                for tipo, cantidad, precios in cursor.execute(
+                    """
+                    SELECT e.tipo_estacion, COUNT(DISTINCT e.id_estacion), COUNT(p.id_precio)
+                    FROM estacion e LEFT JOIN precio p ON p.id_estacion = e.id_estacion
+                    GROUP BY e.tipo_estacion
+                    """
+                )
+            }
+            if obtenidos != esperados:
+                raise ValueError(f"El recuento no coincide con los Excel: {obtenidos} != {esperados}")
     except (OSError, ValueError, xlrd.XLRDError, psycopg.Error) as error:
         parser.exit(1, f"Error al cargar los Excel: {error}\n")
 
@@ -230,6 +250,7 @@ def main():
         precios = sum(len(estacion.precios) for estacion in carga)
         print(f"{tipo}: estaciones={len(carga)}, precios={precios}")
     print(f"Total en {args.base_datos}: {total[0]} estaciones, {total[1]} precios")
+    print("Transacción confirmada: datos guardados y recuentos comprobados.")
 
 
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 #!/bin/bash
 set +x
-set -euo pipefail
+set -Eeuo pipefail
 
 uso() {
     cat <<'AYUDA'
@@ -65,13 +65,19 @@ cd -- "$directorio"
 
 shopt -s nullglob
 consultas=(sql/[0-9][0-9]_consulta_[0-9][0-9].sql)
-[[ ${#consultas[@]} -gt 0 ]] || error "No hay consultas SQL numeradas en sql/."
+[[ ${#consultas[@]} -eq 5 ]] || error "Deben existir las cinco consultas SQL numeradas en sql/."
+for numero in 01 02 03 04 05; do
+    coincidencias=(sql/[0-9][0-9]_consulta_${numero}.sql)
+    [[ ${#coincidencias[@]} -eq 1 ]] || error "Falta o está repetida la consulta $numero."
+done
 
 umask 077
 sesion="$(date +%Y%m%d_%H%M%S)_$$"
 base="carburantes_demo_$sesion"
 mkdir -p logs
 archivo_log="$directorio/logs/demo_$sesion.log"
+resultados="$directorio/logs/resultados_$sesion"
+mkdir -p "$resultados"
 
 log() {
     printf '[%s] %s\n' "$(date +%H:%M:%S)" "$1"
@@ -96,6 +102,7 @@ ejecutar_demo() {
 
     log "Base de demostración: $base"
     log "Registro: $archivo_log"
+    log "Resultados CSV: $resultados"
     log "1/5 · Arranque de PostgreSQL en Docker"
     docker compose up -d --no-recreate --wait db
     usuario=$(docker compose exec -T db printenv POSTGRES_USER)
@@ -109,13 +116,14 @@ ejecutar_demo() {
     docker compose exec -T db createdb -U "$usuario" "$base"
     psql_demo -f - < sql/01_esquema.sql
     psql_demo -c "$recuento_sql"
+    [[ $(psql_demo -At -c "$recuento_sql") == '0|0' ]] || error "La base de demostración no está vacía."
     pausar
 
     printf '\n'
     log "3/5 · Importación completa de preciosEESS_es.xls y embarcacionesPrecios_es.xls"
     clave=$(docker compose exec -T db printenv POSTGRES_PASSWORD)
     PGHOST="${direccion%:*}" PGPORT="${direccion##*:}" PGUSER="$usuario" PGPASSWORD="$clave" \
-        uv run --with-requirements requirements.txt python cargar_excel.py "$origen" --base-datos "$base"
+        uv run --python 3.12 --with-requirements requirements.txt python -u cargar_excel.py "$origen" --base-datos "$base"
     unset clave
     pausar
 
@@ -137,6 +145,7 @@ SQL
     for consulta in "${consultas[@]}"; do
         log "Ejecutando $consulta"
         psql_demo -a -f - < "$consulta"
+        psql_demo --csv -f - < "$consulta" > "$resultados/$(basename "${consulta%.sql}").csv"
         pausar
     done
 
