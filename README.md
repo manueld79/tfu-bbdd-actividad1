@@ -14,11 +14,11 @@ PostgreSQL se ejecuta en Docker. Python se ejecuta en el ordenador mediante **uv
 | Entorno y demostración | [Docker Compose](compose.yaml), [configuración de ejemplo](.env.example) y [script de ejecución](demo_videomemoria.sh) |
 | Consultas SQL | [1. Terrestres](sql/03_consulta_01.sql), [2. Marítimas](sql/04_consulta_02.sql), [3. Madrid](sql/05_consulta_03.sql), [4. Albacete](sql/06_consulta_04.sql) y [5. Precio marítimo](sql/07_consulta_05.sql) |
 | Resultados | [Resultados de las cinco consultas](resultados/README.md) |
-| Videomemoria | Pendiente de grabación y de añadir su enlace |
+| Videomemoria | [Ver vídeo en YouTube (8:43)](https://youtu.be/asIu3eCjsFA) |
 
 ## Videomemoria
 
-**Pendiente.** La grabación está prevista para el 24 de noviembre de 2026. El enlace se añadirá aquí después de comprobar el audio, la legibilidad y los permisos de acceso. Hasta entonces, la entrega está incompleta.
+[Ver la videomemoria en YouTube](https://youtu.be/asIu3eCjsFA) (8:43). El vídeo muestra el diagrama, el DDL, la base vacía y la carga completa. A partir del minuto **7:43** se ejecutan las cinco consultas SQL en PostgreSQL, una por una. El ZIP de entrega también incluye el archivo `videomemoria_carburantes_entrega.mp4`.
 
 ## Modelo relacional
 
@@ -91,12 +91,12 @@ Para la consulta 4 se adopta el punto **38.9943, -1.8585** como referencia aprox
 
 ## Criterios seguidos
 
-El trabajo incluye el modelo relacional, el DDL, la ingesta completa y las cinco consultas con sus resultados. La videomemoria mostrará el diagrama, el esquema y la ejecución desde una base vacía hasta la carga completa, además de las consultas en directo.
+El trabajo incluye el modelo relacional, el DDL, la ingesta completa y las cinco consultas con sus resultados. La videomemoria muestra el diagrama, el esquema, la base vacía y la carga completa con la salida de una ejecución real. El tramo final muestra las cinco consultas ejecutándose en la terminal.
 
 Aunque el enunciado escrito indica Java, en la clase del 10 de noviembre el profesor permite elegir lenguaje y acepta Python y psql (21:58–23:31). También permite los Excel del curso anterior (02:10–03:13), automatizar la demostración (03:17–03:58) y entregar un repositorio acompañado del enlace al vídeo (31:26–32:17). En la sesión del 17 de noviembre confirma que se puede leer directamente desde Excel o CSV (51:39–52:06) y entregar las consultas en archivos SQL (52:32–52:56).
 
 ## Verificación
 
-La ejecución completa se comprobó el 13 de noviembre de 2026 en macOS con PostgreSQL 16 en Docker. El 23 de noviembre se revisaron los archivos y se recalcularon los resultados directamente desde los Excel; coinciden con los CSV incluidos. El detalle está en [resultados](resultados/README.md). La ejecución nativa en WSL no se ha comprobado.
+La ejecución completa se comprobó el 13 de noviembre de 2026 en macOS con PostgreSQL 16 en Docker. El 23 de noviembre se revisaron los archivos y se recalcularon los resultados directamente desde los Excel; coinciden con los CSV incluidos. El detalle está en [resultados](resultados/README.md). El 26 de noviembre se repitió la carga desde una base vacía con PostgreSQL 16 nativo en macOS y se obtuvieron los mismos cinco CSV. La ejecución en WSL no se ha comprobado.
 
 Cada nueva ejecución genera su registro y los resultados CSV en `logs/`, una carpeta local excluida de Git. La contraseña local de `.env` también queda excluida.

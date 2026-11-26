@@ -40,4 +40,4 @@ El 23 de noviembre de 2026 se verificaron los hashes de los dos Excel y se recal
 
 ## Límites
 
-La ejecución completa está comprobada en macOS. El recorrido nativo en WSL no se ha probado. Los datos son una instantánea histórica, no precios actuales. La consulta de Albacete usa un radio geográfico de 10 km, no una distancia por carretera. La videomemoria sigue pendiente y su enlace se incorporará al [README principal](../README.md#videomemoria).
+La ejecución completa está comprobada en macOS. El recorrido nativo en WSL no se ha probado. Los datos son una instantánea histórica, no precios actuales. La consulta de Albacete usa un radio geográfico de 10 km, no una distancia por carretera. La [videomemoria](../README.md#videomemoria) incluye un tramo con las cinco consultas ejecutándose en PostgreSQL.
